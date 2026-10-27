@@ -1,0 +1,48 @@
+name: Synkroniser kalendere
+
+on:
+  schedule:
+    - cron: "*/30 * * * *"  # Hver halve time (GitHub kan forsinke kørslen lidt).
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Vis kun ændringer uden at skrive"
+        type: boolean
+        default: true
+
+# Kørslen må kun læse repoet – ikke skrive til det.
+permissions:
+  contents: read
+
+concurrency:
+  group: calsync
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    # Kører kun i repoet med secrets – ikke i offentlige kopier og forks.
+    # Bruger du koden selv, så skift navnet ud med dit eget repo.
+    if: github.repository == 'SofusGM/calender-sharing'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    # Secrets ligger i miljøet "kalender", som kun må bruges fra main.
+    environment: kalender
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262  # v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065  # v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      # --require-hashes: kun præcis de pakker, der er låst i requirements.txt.
+      - run: pip install --require-hashes -r requirements.txt
+      - run: python -m calsync ${{ inputs.dry_run && '--dry-run' || '' }}
+        env:
+          GOOGLE_PERSON_NAME: ${{ secrets.GOOGLE_PERSON_NAME }}
+          ICLOUD_PERSON_NAME: ${{ secrets.ICLOUD_PERSON_NAME }}
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+          ICLOUD_USERNAME: ${{ secrets.ICLOUD_USERNAME }}
+          ICLOUD_APP_PASSWORD: ${{ secrets.ICLOUD_APP_PASSWORD }}

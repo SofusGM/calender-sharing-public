@@ -1,0 +1,8 @@
+caldav==3.6.0
+icalendar==7.3.0
+recurring-ical-events==3.8.2
+holidays==0.107
+google-api-python-client==2.201.0
+google-auth==2.62.0
+google-auth-oauthlib==1.5.0
+PyYAML==6.0.3

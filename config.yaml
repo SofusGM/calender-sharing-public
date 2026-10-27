@@ -1,0 +1,48 @@
+# Opsætning af kalenderdelingen.
+# Ændr reglerne her – programmet læser filen ved hver kørsel.
+
+timezone: Europe/Copenhagen
+
+# Hvor langt tilbage/frem i tiden der synkroniseres.
+sync_window:
+  days_back: 7
+  days_ahead: 90
+
+# Hvilke aftaler der deles. Reglerne gælder begge veje.
+rules:
+  # På hverdage deles kun aftaler, der rækker ind over dette tidspunkt
+  # (fx deles 16:00–18:00, men ikke 15:00–17:00).
+  weekday_from: "17:00"
+  # Weekender deles hele dagen.
+  weekends_all_day: true
+  # Helligdage deles hele dagen, også selvom de falder på en hverdag.
+  holidays_all_day: true
+  holidays_country: DK
+  # Ekstra dage, der behandles som helligdage (MM-DD). Ikke officielle
+  # helligdage, men de fleste har fri: grundlovsdag, juleaften, nytårsaften.
+  extra_days_off: ["06-05", "12-24", "12-31"]
+  # Heldagsbegivenheder (fødselsdage, ferier osv.) deles altid.
+  all_day_events: true
+
+# Hvad der kopieres med over ud over titel og tidspunkt.
+copy:
+  location: true
+  description: false
+
+# De to personer. Hver persons aftaler kopieres over i den andens
+# "target_calendar" med personens navn og kolon foran titlen.
+#
+# Navnene ligger ikke i repoet. ${...} hentes fra miljøvariabler, som på
+# GitHub sættes som secrets (GOOGLE_PERSON_NAME og ICLOUD_PERSON_NAME).
+people:
+  - name: ${GOOGLE_PERSON_NAME}
+    provider: google
+    # "all" = alle egne kalendere, ellers en liste med kalendernavne.
+    source_calendars: all
+    # Kalenderen i Google-kontoen, som den andens aftaler lægges i.
+    target_calendar: "Hvad laver ${ICLOUD_PERSON_NAME}?"
+  - name: ${ICLOUD_PERSON_NAME}
+    provider: icloud
+    source_calendars: all
+    # Kalenderen i iCloud-kontoen, som den andens aftaler lægges i.
+    target_calendar: "Hvad laver ${GOOGLE_PERSON_NAME}?"
